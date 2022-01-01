@@ -1,0 +1,17 @@
+{
+  "name": "ProjectoNode",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "repository": "https://github.com/hacles100/ProjectoNode.git",
+  "author": "Héricles <haclesrocha200@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "express": "^4.17.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
