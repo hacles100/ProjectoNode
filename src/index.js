@@ -1,5 +1,6 @@
 const { response, request } = require('express');
 const express = require('express'); //importação do express
+const { uuid, isUuid } = require('uuidv4');
 
 const app = express();
 
@@ -20,49 +21,95 @@ app.use(express.json());
  * Request Body: Conteudo na hora de criar ou editar um recurso (JSON)
  */
 
+/**
+ * Middleware:
+ * 
+ * Interceptador de requisicoes, pode interromper a requisicao e alterar os dados da requisicao
+ */
+
+const projects = [];
+
+function logRequests(request, response, next) {
+    const { method, url } = request;
+
+    const logLabel = `[${method.toUpperCase()}] ${url}`;
+
+    console.time(logLabel);
+
+    next(); // proximo middleware
+
+    console.timeEnd(logLabel);
+
+}
+
+function validateProjectId(request, response, next) {
+    const { id } = request.params;
+
+    if (!isUuid(id)) {
+        return response.status(400).json({ error: 'Invalid project ID.' });
+    }
+
+    return next();
+}
+
+app.use(logRequests);
+app.use('/projects/:id', validateProjectId);
 
 app.get('/projects', (request, response) => {
-  const query = request.query;
+  const { title } = request.query;
 
-  console.log(query);
+  const results = title
+    ? projects.filter(project => project.title.includes(title))
+    : projects;
 
-
-   return response.json([
-       'Projecto 1',
-       'Projecto 2',
-   ]);
+   return response.json(results);
 });
 
 app.post('/projects', (request, response) => { 
-    const body = request.body;
+    const { title, owner } = request.body;
     
-    console.log(body);
+    const project = { id: uuid(), title, owner };
 
-  return response.json([
-      'Projecto 1',
-      'Projecto 2',
-      'Projecto 3',
-  ]);
+    projects.push(project);
+
+  return response.json(project);
 });
 
 
 app.put('/projects/:id', (request, response) => {
-    const params = request.params;
+    const { id } = request.params;
+    const { title, owner } = request.body;
 
-    console.log(params);
+    const projectIndex = projects.findIndex(project => project.id == id);
+    
+    if (projectIndex < 0) {
+        return response.status(400).json({ error: 'project not found.'});
+    }
 
-  return response.json([
-      'Projecto 4',
-      'Projecto 2',
-      'Projecto 3',
-  ]);
+    const project = {
+        id,
+        title,
+        owner,
+    };
+  
+  projects[projectIndex] = project;  
+
+  return response.json(project);
 });
 
 app.delete('/projects/:id', (request, response) => {
-    return response.json([
-        'Projecto 2',
-        'Projecto 3',
-    ]);
+  const { id } = request.params;
+
+  const projectIndex = projects.findIndex(project => project.id == id);
+
+  if (projectIndex < 0) {
+      return response.status(400).json({ error: 'project not found.' });
+  }
+
+
+  projects.splice(projectIndex, 1);
+
+    return response.status(204).send();
 });
 
 app.listen(3333,() => {

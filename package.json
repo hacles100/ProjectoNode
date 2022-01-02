@@ -9,7 +9,8 @@
     "dev": "nodemon"
   },
   "dependencies": {
-    "express": "^4.17.2"
+    "express": "^4.17.2",
+    "uuidv4": "^6.2.12"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
